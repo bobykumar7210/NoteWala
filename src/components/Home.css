@@ -20,6 +20,26 @@
   gap: 10px;
 }
 
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 19px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.menu-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
 .nav-logo-icon {
   width: 36px; height: 36px;
   border-radius: 10px;
@@ -36,6 +56,78 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ── Search Bar (Navbar Center) ──────────────────────── */
+.navbar-center {
+  flex: 1;
+  max-width: 540px;
+  margin: 0 24px;
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(30, 35, 51, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 40px;
+  transition: all 0.2s ease;
+}
+
+.search-bar:focus-within {
+  background: #1e2333;
+  border-color: rgba(45, 212, 191, 0.4);
+  box-shadow: 0 0 0 2px rgba(32, 178, 170, 0.15), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.search-icon {
+  font-size: 14px;
+  color: #64748b;
+  margin-right: 10px;
+  user-select: none;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f1f5f9;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: #64748b;
+}
+
+.search-clear-btn {
+  background: transparent;
+  border: none;
+  color: #8b9bb4;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.search-clear-btn:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 680px) {
+  .navbar-center {
+    max-width: 220px;
+    margin: 0 10px;
+  }
 }
 
 .navbar-right {
@@ -76,10 +168,142 @@
   font-family: 'Inter', system-ui, sans-serif;
 }
 
+.home-body {
+  display: flex;
+  min-height: calc(100vh - 60px);
+}
+
+/* ── Sidebar (Google Keep style) ─────────────────────── */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 18px 12px;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), padding 0.22s ease;
+  overflow-x: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(18, 22, 33, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.sidebar.collapsed {
+  width: 72px;
+  padding: 18px 8px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 24px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+}
+
+.sidebar-item.active {
+  background: rgba(45, 212, 191, 0.14);
+  color: #2dd4bf;
+  font-weight: 600;
+  border-color: rgba(45, 212, 191, 0.25);
+  box-shadow: 0 2px 12px rgba(32, 178, 170, 0.1);
+}
+
+.sidebar-item-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+}
+
+.sidebar.collapsed .sidebar-item-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-item {
+  justify-content: center;
+  padding: 12px 0;
+  border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 60px;
+    left: -260px;
+    bottom: 0;
+    width: 240px;
+    z-index: 500;
+    background: #171b26;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+    transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar.open {
+    left: 0;
+  }
+  .sidebar.collapsed {
+    left: -260px;
+  }
+  .sidebar-overlay {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 490;
+    animation: modalFadeIn 0.15s ease-out;
+  }
+}
+
 .home-main {
-  max-width: 1100px;
+  flex: 1;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 32px 24px 60px;
+  width: 100%;
+}
+
+/* ── Section Header (Archive & Trash views) ──────────── */
+.section-header {
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.section-title {
+  font-size: 21px;
+  font-weight: 700;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trash-hint {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 6px;
 }
 
 /* ── Create Card ─────────────────────────────────────── */
@@ -261,7 +485,19 @@
 }
 
 .icon-btn:hover { background: rgba(255,255,255,0.08); }
-.delete-btn:hover { background: rgba(248,113,113,0.12); }
+.delete-btn:hover { background: rgba(248,113,113,0.14); }
+.archive-btn:hover { background: rgba(45, 212, 191, 0.16); }
+.unarchive-btn:hover { background: rgba(59, 130, 246, 0.16); }
+.restore-btn:hover { background: rgba(34, 197, 94, 0.16); }
+
+.modal-action-btn {
+  opacity: 0.85;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.modal-action-btn:hover {
+  opacity: 1;
+}
 
 /* ── Google Keep Style Modal Popup ───────────────────── */
 .modal-backdrop {

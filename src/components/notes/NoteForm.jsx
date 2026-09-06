@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BASE_URL } from "../../utils/constant";
 
-function NoteForm({ token, onNoteCreated }) {
+function NoteForm({ token, refreshNotes }) {
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -26,7 +26,7 @@ function NoteForm({ token, onNoteCreated }) {
         setTitle("");
         setDescription("");
         setFormOpen(false);
-        if (onNoteCreated) onNoteCreated();
+        if (refreshNotes) refreshNotes();
       }
     } catch (err) {
       console.error("Failed to create note:", err);
