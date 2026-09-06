@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { BASE_URL } from "../utils/constant";
 import { Navbar, Sidebar } from "./layout";
 import { NoteForm, NoteList, NoteModal, ConfirmDeleteModal } from "./notes";
@@ -9,15 +9,26 @@ import "./Home.css";
 function Home() {
   const { token, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [notes, setNotes] = useState([]);
   const [isLoadingNotes, setIsLoadingNotes] = useState(true);
   const [activeNote, setActiveNote] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Navigation tab: 'active' | 'archived' | 'deleted' (Trash)
-  const [activeTab, setActiveTab] = useState("active");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Derive active tab from URL route (URL-driven navigation)
+  const activeTab =
+    location.pathname === "/archive"
+      ? "archived"
+      : location.pathname === "/trash"
+        ? "deleted"
+        : "active";
+
+  // Reset search input when navigating to a different page route
+  useEffect(() => {
+    setSearchQuery("");
+  }, [location.pathname]);
 
   // Delete confirmation state
   const [noteToDelete, setNoteToDelete] = useState(null);
@@ -51,8 +62,8 @@ function Home() {
       activeTab === "archived"
         ? "Archive — Notewala"
         : activeTab === "deleted"
-        ? "Trash — Notewala"
-        : "Notewala";
+          ? "Trash — Notewala"
+          : "Notewala";
 
     const timer = setTimeout(() => {
       fetchNotes(searchQuery, activeTab);
@@ -170,11 +181,6 @@ function Home() {
       {/* ── App Layout Body: Sidebar + Main Content ── */}
       <div className="home-body">
         <Sidebar
-          activeTab={activeTab}
-          onSelectTab={(tab) => {
-            setActiveTab(tab);
-            setSearchQuery("");
-          }}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />

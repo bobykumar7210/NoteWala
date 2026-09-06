@@ -1,8 +1,10 @@
-function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
+import { NavLink } from "react-router-dom";
+
+function Sidebar({ isOpen, onClose }) {
   const menuItems = [
-    { id: "active", label: "Notes", icon: "📝" },
-    { id: "archived", label: "Archive", icon: "📥" },
-    { id: "deleted", label: "Trash", icon: "🗑️" },
+    { to: "/", label: "Notes", icon: "📝", end: true },
+    { to: "/archive", label: "Archive", icon: "📥" },
+    { to: "/trash", label: "Trash", icon: "🗑️" },
   ];
 
   return (
@@ -19,26 +21,24 @@ function Sidebar({ activeTab, onSelectTab, isOpen, onClose }) {
       {/* Sidebar Navigation */}
       <aside className={`sidebar ${isOpen ? "open" : "collapsed"}`}>
         <nav className="sidebar-nav">
-          {menuItems.map((item) => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                id={`sidebar-tab-${item.id}`}
-                type="button"
-                className={`sidebar-item ${isActive ? "active" : ""}`}
-                onClick={() => {
-                  onSelectTab(item.id);
-                  if (window.innerWidth <= 768 && onClose) {
-                    onClose();
-                  }
-                }}
-              >
-                <span className="sidebar-item-icon">{item.icon}</span>
-                <span className="sidebar-item-label">{item.label}</span>
-              </button>
-            );
-          })}
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `sidebar-item ${isActive ? "active" : ""}`
+              }
+              onClick={() => {
+                if (window.innerWidth <= 768 && onClose) {
+                  onClose();
+                }
+              }}
+            >
+              <span className="sidebar-item-icon">{item.icon}</span>
+              <span className="sidebar-item-label">{item.label}</span>
+            </NavLink>
+          ))}
         </nav>
       </aside>
     </>
