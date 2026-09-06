@@ -1,11 +1,22 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 function Sidebar({ isOpen, onClose }) {
+  const location = useLocation();
+
   const menuItems = [
-    { to: "/", label: "Notes", icon: "📝", end: true },
+    { to: "/", label: "Notes", icon: "📝", isNoteRoot: true },
     { to: "/archive", label: "Archive", icon: "📥" },
     { to: "/trash", label: "Trash", icon: "🗑️" },
   ];
+
+  function isItemActive(item) {
+    if (item.isNoteRoot) {
+      return (
+        location.pathname === "/" || location.pathname.startsWith("/note/")
+      );
+    }
+    return location.pathname.startsWith(item.to);
+  }
 
   return (
     <>
@@ -25,10 +36,7 @@ function Sidebar({ isOpen, onClose }) {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `sidebar-item ${isActive ? "active" : ""}`
-              }
+              className={`sidebar-item ${isItemActive(item) ? "active" : ""}`}
               onClick={() => {
                 if (window.innerWidth <= 768 && onClose) {
                   onClose();

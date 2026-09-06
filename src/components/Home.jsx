@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { BASE_URL } from "../utils/constant";
 import { Navbar, Sidebar } from "./layout";
 import { NoteForm, NoteList, NoteModal, ConfirmDeleteModal } from "./notes";
@@ -10,6 +10,7 @@ function Home() {
   const { token, user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { id: routeNoteId } = useParams();
 
   const [notes, setNotes] = useState([]);
   const [isLoadingNotes, setIsLoadingNotes] = useState(true);
@@ -17,18 +18,41 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Derive active tab from URL route (URL-driven navigation)
+  // Derive base section path: "/" for notes, "/archive" for archive, "/trash" for trash
+  const basePath = location.pathname.startsWith("/archive")
+    ? "/archive"
+    : location.pathname.startsWith("/trash")
+      ? "/trash"
+      : "/";
+
+  // Derive active tab from basePath
   const activeTab =
-    location.pathname === "/archive"
+    basePath === "/archive"
       ? "archived"
-      : location.pathname === "/trash"
+      : basePath === "/trash"
         ? "deleted"
         : "active";
 
-  // Reset search input when navigating to a different page route
+  // Reset search input when navigating to a different main section
   useEffect(() => {
     setSearchQuery("");
-  }, [location.pathname]);
+  }, [basePath]);
+
+  // Open note modal and update browser URL to include note ID
+  function handleOpenModal(note) {
+    setActiveNote(note);
+    const targetUrl =
+      basePath === "/" ? `/note/${note._id}` : `${basePath}/note/${note._id}`;
+    navigate(targetUrl);
+  }
+
+  // Close note modal and return browser URL back to base route
+  function handleCloseModal() {
+    setActiveNote(null);
+    if (routeNoteId) {
+      navigate(basePath);
+    }
+  }
 
   // Delete confirmation state
   const [noteToDelete, setNoteToDelete] = useState(null);
@@ -72,6 +96,52 @@ function Home() {
     return () => clearTimeout(timer);
   }, [searchQuery, activeTab]);
 
+  // Sync activeNote with URL routeNoteId (supports direct URL access, refresh, back/forward)
+  useEffect(() => {
+    if (!routeNoteId) {
+      if (activeNote) setActiveNote(null);
+      return;
+    }
+
+    // Already set to this note
+    if (activeNote?._id === routeNoteId) {
+      return;
+    }
+
+    // Find in already loaded notes list
+    const found = notes.find((n) => n._id === routeNoteId);
+    if (found) {
+      setActiveNote(found);
+      return;
+    }
+
+    // If not found in list (e.g. page refreshed or direct link), fetch single note by ID
+    if (token) {
+      let isMounted = true;
+      async function fetchSingleNote() {
+        try {
+          const res = await fetch(`${BASE_URL}/notes/${routeNoteId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          if (!isMounted) return;
+          if (res.ok && data.data) {
+            setActiveNote(data.data);
+          } else {
+            // Note does not exist or unauthorized -> return to base path
+            navigate(basePath, { replace: true });
+          }
+        } catch (err) {
+          if (isMounted) navigate(basePath, { replace: true });
+        }
+      }
+      fetchSingleNote();
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [routeNoteId, notes, token, basePath, navigate, activeNote]);
+
   // Update note (called from NoteModal dialog)
   async function handleUpdate(id, { title, description }) {
     try {
@@ -84,7 +154,7 @@ function Home() {
         body: JSON.stringify({ title, description }),
       });
       if (res.ok) {
-        setActiveNote(null);
+        handleCloseModal();
         fetchNotes(searchQuery, activeTab);
       }
     } catch (err) {
@@ -101,7 +171,7 @@ function Home() {
       });
       if (res.ok) {
         if (activeNote?._id === note._id) {
-          setActiveNote(null);
+          handleCloseModal();
         }
         fetchNotes(searchQuery, activeTab);
       }
@@ -119,7 +189,7 @@ function Home() {
       });
       if (res.ok) {
         if (activeNote?._id === note._id) {
-          setActiveNote(null);
+          handleCloseModal();
         }
         fetchNotes(searchQuery, activeTab);
       }
@@ -149,7 +219,7 @@ function Home() {
       });
       if (res.ok) {
         if (activeNote?._id === noteToDelete._id) {
-          setActiveNote(null);
+          handleCloseModal();
         }
         setNoteToDelete(null);
         fetchNotes(searchQuery, activeTab);
@@ -209,7 +279,7 @@ function Home() {
           <NoteList
             notes={notes}
             isLoadingNotes={isLoadingNotes}
-            onOpenModal={setActiveNote}
+            onOpenModal={handleOpenModal}
             onDelete={requestDelete}
             onArchive={handleArchive}
             onRestore={handleRestore}
@@ -222,7 +292,7 @@ function Home() {
       {/* ── Note Dialog / Modal Popup Component ── */}
       <NoteModal
         note={activeNote}
-        onClose={() => setActiveNote(null)}
+        onClose={handleCloseModal}
         onUpdate={handleUpdate}
         onDelete={requestDelete}
         onArchive={handleArchive}

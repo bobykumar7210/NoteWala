@@ -24,6 +24,14 @@ function App() {
             }
           />
           <Route
+            path="/note/:id"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/archive"
             element={
               <ProtectedRoute>
@@ -32,7 +40,23 @@ function App() {
             }
           />
           <Route
+            path="/archive/note/:id"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/trash"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trash/note/:id"
             element={
               <ProtectedRoute>
                 <Home />
