@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import RegisterForm from "./components/auth/Registration";
 import Login from "./components/auth/Login";
 import Home from "./components/Home";
+import PublicRoute from "./components/auth/PublicRoute";
 
 function App() {
   return (
@@ -11,52 +12,12 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/register" element={<RegisterForm />} />
-          <Route path="/login"    element={<Login />} />
+          <Route path="/register" element={<PublicRoute><RegisterForm /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
 
-          {/* Protected routes */}
+          {/* Protected home route */}
           <Route
             path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/note/:id"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/archive"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/archive/note/:id"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/trash"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/trash/note/:id"
             element={
               <ProtectedRoute>
                 <Home />
