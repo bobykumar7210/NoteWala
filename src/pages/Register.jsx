@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BASE_URL } from "../../utils/constant";
-import "../../theme.css";
+import { registerUser } from "../services/authService";
+import "../styles/theme.css";
 
-function RegisterForm() {
+function Register() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -14,13 +14,21 @@ function RegisterForm() {
     terms: false,
   });
 
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
+
   useEffect(() => {
     document.title = "Sign Up — Notewala";
   }, []);
 
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  function triggerShake() {
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 450);
+  }
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
@@ -28,7 +36,7 @@ function RegisterForm() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    setErrors(prev => ({ ...prev, [name]: "", server: "" }));
   }
 
   function validate() {
@@ -64,37 +72,29 @@ function RegisterForm() {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      triggerShake();
       return;
     }
+
     setErrors({});
     setSuccessMessage("");
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
+      await registerUser({
+        username: formData.name.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message || "Registration failed");
-      }
 
       setSuccessMessage("Account created! Redirecting to login…");
       setTimeout(() => navigate("/login"), 1500);
-
     } catch (error) {
       setErrors(prev => ({
         ...prev,
         server: error.message || "Something went wrong. Please try again.",
       }));
+      triggerShake();
     } finally {
       setIsLoading(false);
     }
@@ -102,8 +102,7 @@ function RegisterForm() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
-
+      <div className={`auth-card ${isShaking ? "shake" : ""}`}>
         {/* Logo */}
         <div className="auth-logo">
           <div className="auth-logo-icon">📝</div>
@@ -114,7 +113,6 @@ function RegisterForm() {
         <p className="auth-subtitle">Start taking smarter notes today</p>
 
         <form onSubmit={handleSubmit} noValidate>
-
           {/* Username */}
           <div className="form-group">
             <label htmlFor="reg-name">Username</label>
@@ -157,14 +155,25 @@ function RegisterForm() {
             <div className="input-wrap">
               <input
                 id="reg-password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
+                className="has-toggle"
                 placeholder="Min. 8 characters"
                 value={formData.password}
                 onChange={handleChange}
                 autoComplete="new-password"
               />
               <span className="icon">🔒</span>
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(prev => !prev)}
+                tabIndex={-1}
+                title={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "👁️" : "🙈"}
+              </button>
             </div>
             {errors.password && <span className="field-error">{errors.password}</span>}
           </div>
@@ -175,14 +184,25 @@ function RegisterForm() {
             <div className="input-wrap">
               <input
                 id="reg-confirm"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
+                className="has-toggle"
                 placeholder="Re-enter your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 autoComplete="new-password"
               />
               <span className="icon">🔑</span>
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowConfirmPassword(prev => !prev)}
+                tabIndex={-1}
+                title={showConfirmPassword ? "Hide password" : "Show password"}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                {showConfirmPassword ? "👁️" : "🙈"}
+              </button>
             </div>
             {errors.confirmPassword && (
               <span className="field-error">{errors.confirmPassword}</span>
@@ -202,7 +222,11 @@ function RegisterForm() {
               I agree to the Terms &amp; Conditions
             </label>
           </div>
-          {errors.terms && <span className="field-error" style={{ marginBottom: 12, display: "block" }}>{errors.terms}</span>}
+          {errors.terms && (
+            <span className="field-error" style={{ marginBottom: 12, display: "block" }}>
+              {errors.terms}
+            </span>
+          )}
 
           {/* Alerts */}
           {errors.server && (
@@ -213,7 +237,14 @@ function RegisterForm() {
           )}
 
           <button id="register-submit" type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? "Creating account…" : "Create account"}
+            {isLoading ? (
+              <>
+                <span className="btn-spinner" />
+                <span>Creating account…</span>
+              </>
+            ) : (
+              "Create account"
+            )}
           </button>
         </form>
 
@@ -225,4 +256,4 @@ function RegisterForm() {
   );
 }
 
-export default RegisterForm;
+export default Register;

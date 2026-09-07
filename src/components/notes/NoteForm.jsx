@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BASE_URL } from "../../utils/constant";
+import { createNote } from "../../services/noteService";
 
 function NoteForm({ token, refreshNotes }) {
   const [formOpen, setFormOpen] = useState(false);
@@ -13,21 +13,11 @@ function NoteForm({ token, refreshNotes }) {
 
     setIsCreating(true);
     try {
-      const res = await fetch(`${BASE_URL}/notes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ title, description }),
-      });
-
-      if (res.ok) {
-        setTitle("");
-        setDescription("");
-        setFormOpen(false);
-        if (refreshNotes) refreshNotes();
-      }
+      await createNote(token, { title: title.trim(), description });
+      setTitle("");
+      setDescription("");
+      setFormOpen(false);
+      if (refreshNotes) refreshNotes();
     } catch (err) {
       console.error("Failed to create note:", err);
     } finally {

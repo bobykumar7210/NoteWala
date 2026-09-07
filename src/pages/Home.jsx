@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { BASE_URL } from "../utils/constant";
-import { Navbar, Sidebar } from "./layout";
-import { NoteForm, NoteList, NoteModal, ConfirmDeleteModal } from "./notes";
-import "./Home.css";
+import { useAuth } from "../context/AuthContext";
+import {
+  getAllNotes,
+  getNoteById,
+  updateNote,
+  deleteNote,
+  archiveNote,
+  restoreNote,
+} from "../services/noteService";
+import { Navbar, Sidebar } from "../components/layout";
+import { NoteForm, NoteList, NoteModal, ConfirmDeleteModal } from "../components/notes";
+import "../styles/Home.css";
 
 function Home() {
   const { token, user, logout } = useAuth();
@@ -62,17 +69,8 @@ function Home() {
   async function fetchNotes(query = searchQuery, tab = activeTab) {
     setIsLoadingNotes(true);
     try {
-      const params = new URLSearchParams();
-      if (tab) params.append("status", tab);
-      if (query && query.trim()) params.append("q", query.trim());
-
-      const res = await fetch(`${BASE_URL}/notes?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotes(data.data || []);
-      }
+      const res = await getAllNotes(token, { status: tab, q: query });
+      setNotes(res.data || []);
     } catch (err) {
       console.error("Failed to fetch notes:", err);
     } finally {
@@ -120,18 +118,14 @@ function Home() {
       let isMounted = true;
       async function fetchSingleNote() {
         try {
-          const res = await fetch(`${BASE_URL}/notes/${routeNoteId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const data = await res.json();
+          const noteData = await getNoteById(token, routeNoteId);
           if (!isMounted) return;
-          if (res.ok && data.data) {
-            setActiveNote(data.data);
+          if (noteData) {
+            setActiveNote(noteData);
           } else {
-            // Note does not exist or unauthorized -> return to base path
             navigate(basePath, { replace: true });
           }
-        } catch (err) {
+        } catch {
           if (isMounted) navigate(basePath, { replace: true });
         }
       }
@@ -145,18 +139,9 @@ function Home() {
   // Update note (called from NoteModal dialog)
   async function handleUpdate(id, { title, description }) {
     try {
-      const res = await fetch(`${BASE_URL}/notes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ title, description }),
-      });
-      if (res.ok) {
-        handleCloseModal();
-        fetchNotes(searchQuery, activeTab);
-      }
+      await updateNote(token, id, { title, description });
+      handleCloseModal();
+      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to update note:", err);
     }
@@ -165,16 +150,11 @@ function Home() {
   // Archive an active note
   async function handleArchive(note) {
     try {
-      const res = await fetch(`${BASE_URL}/notes/${note._id}/archive`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        if (activeNote?._id === note._id) {
-          handleCloseModal();
-        }
-        fetchNotes(searchQuery, activeTab);
+      await archiveNote(token, note._id);
+      if (activeNote?._id === note._id) {
+        handleCloseModal();
       }
+      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to archive note:", err);
     }
@@ -183,16 +163,11 @@ function Home() {
   // Restore an archived or deleted note back to active
   async function handleRestore(note) {
     try {
-      const res = await fetch(`${BASE_URL}/notes/${note._id}/restore`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        if (activeNote?._id === note._id) {
-          handleCloseModal();
-        }
-        fetchNotes(searchQuery, activeTab);
+      await restoreNote(token, note._id);
+      if (activeNote?._id === note._id) {
+        handleCloseModal();
       }
+      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to restore note:", err);
     }
@@ -213,17 +188,12 @@ function Home() {
     if (!noteToDelete?._id) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`${BASE_URL}/notes/${noteToDelete._id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        if (activeNote?._id === noteToDelete._id) {
-          handleCloseModal();
-        }
-        setNoteToDelete(null);
-        fetchNotes(searchQuery, activeTab);
+      await deleteNote(token, noteToDelete._id);
+      if (activeNote?._id === noteToDelete._id) {
+        handleCloseModal();
       }
+      setNoteToDelete(null);
+      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to delete note:", err);
     } finally {
