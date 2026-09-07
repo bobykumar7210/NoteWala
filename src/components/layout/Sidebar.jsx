@@ -1,18 +1,19 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { ROUTES } from "../../utils/constants";
 
 function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
 
   const menuItems = [
-    { to: "/", label: "Notes", icon: "📝", isNoteRoot: true },
-    { to: "/archive", label: "Archive", icon: "📥" },
-    { to: "/trash", label: "Trash", icon: "🗑️" },
+    { to: ROUTES.HOME, label: "Notes", icon: "📝", isNoteRoot: true },
+    { to: ROUTES.ARCHIVE, label: "Archive", icon: "📥" },
+    { to: ROUTES.TRASH, label: "Trash", icon: "🗑️" },
   ];
 
   function isItemActive(item) {
     if (item.isNoteRoot) {
       return (
-        location.pathname === "/" || location.pathname.startsWith("/note/")
+        location.pathname === ROUTES.HOME || location.pathname.startsWith("/note/")
       );
     }
     return location.pathname.startsWith(item.to);

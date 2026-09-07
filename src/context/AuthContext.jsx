@@ -1,27 +1,28 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
+import { STORAGE_KEYS } from "../utils/constants";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEYS.TOKEN));
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("user"));
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER));
     } catch {
       return null;
     }
   });
 
   function login(token, userData) {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
     setToken(token);
     setUser(userData);
   }
 
   function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
     setToken(null);
     setUser(null);
   }

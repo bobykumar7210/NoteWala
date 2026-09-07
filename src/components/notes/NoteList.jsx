@@ -1,4 +1,5 @@
 import NoteItem from "./NoteItem";
+import { NOTE_STATUS } from "../../utils/constants";
 
 function NoteList({
   notes,
@@ -7,7 +8,7 @@ function NoteList({
   onDelete,
   onArchive,
   onRestore,
-  activeTab = "active",
+  activeTab = NOTE_STATUS.ACTIVE,
   searchQuery,
 }) {
   if (isLoadingNotes) {
@@ -15,9 +16,9 @@ function NoteList({
       <div className="loading-state">
         <div className="spinner" />
         <p>
-          {activeTab === "archived"
+          {activeTab === NOTE_STATUS.ARCHIVED
             ? "Loading archived notes…"
-            : activeTab === "deleted"
+            : activeTab === NOTE_STATUS.DELETED
             ? "Loading trash…"
             : "Loading your notes…"}
         </p>
@@ -27,9 +28,9 @@ function NoteList({
 
   if (notes.length === 0) {
     const tabName =
-      activeTab === "archived"
+      activeTab === NOTE_STATUS.ARCHIVED
         ? "archive"
-        : activeTab === "deleted"
+        : activeTab === NOTE_STATUS.DELETED
         ? "trash"
         : "notes";
 
@@ -39,10 +40,10 @@ function NoteList({
     if (searchQuery) {
       emptyIcon = "🔍";
       emptyMessage = `No notes matching "${searchQuery}" in ${tabName}`;
-    } else if (activeTab === "archived") {
+    } else if (activeTab === NOTE_STATUS.ARCHIVED) {
       emptyIcon = "📥";
       emptyMessage = "Your archived notes appear here";
-    } else if (activeTab === "deleted") {
+    } else if (activeTab === NOTE_STATUS.DELETED) {
       emptyIcon = "🗑️";
       emptyMessage = "No notes in Trash";
     }

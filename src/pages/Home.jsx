@@ -9,6 +9,7 @@ import {
   archiveNote,
   restoreNote,
 } from "../services/noteService";
+import { ROUTES, NOTE_STATUS } from "../utils/constants";
 import { Navbar, Sidebar } from "../components/layout";
 import { NoteForm, NoteList, NoteModal, ConfirmDeleteModal } from "../components/notes";
 import "../styles/Home.css";
@@ -25,20 +26,20 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Derive base section path: "/" for notes, "/archive" for archive, "/trash" for trash
-  const basePath = location.pathname.startsWith("/archive")
-    ? "/archive"
-    : location.pathname.startsWith("/trash")
-      ? "/trash"
-      : "/";
+  // Derive base section path using ROUTES constants
+  const basePath = location.pathname.startsWith(ROUTES.ARCHIVE)
+    ? ROUTES.ARCHIVE
+    : location.pathname.startsWith(ROUTES.TRASH)
+      ? ROUTES.TRASH
+      : ROUTES.HOME;
 
-  // Derive active tab from basePath
+  // Derive active tab using NOTE_STATUS constants
   const activeTab =
-    basePath === "/archive"
-      ? "archived"
-      : basePath === "/trash"
-        ? "deleted"
-        : "active";
+    basePath === ROUTES.ARCHIVE
+      ? NOTE_STATUS.ARCHIVED
+      : basePath === ROUTES.TRASH
+        ? NOTE_STATUS.DELETED
+        : NOTE_STATUS.ACTIVE;
 
   // Reset search input when navigating to a different main section
   useEffect(() => {
@@ -49,7 +50,9 @@ function Home() {
   function handleOpenModal(note) {
     setActiveNote(note);
     const targetUrl =
-      basePath === "/" ? `/note/${note._id}` : `${basePath}/note/${note._id}`;
+      basePath === ROUTES.HOME
+        ? ROUTES.NOTE(note._id)
+        : `${basePath}/note/${note._id}`;
     navigate(targetUrl);
   }
 
@@ -81,9 +84,9 @@ function Home() {
   // Fetch on mount and when searchQuery or activeTab changes (with 300ms debounce)
   useEffect(() => {
     document.title =
-      activeTab === "archived"
+      activeTab === NOTE_STATUS.ARCHIVED
         ? "Archive — Notewala"
-        : activeTab === "deleted"
+        : activeTab === NOTE_STATUS.DELETED
           ? "Trash — Notewala"
           : "Notewala";
 
@@ -204,7 +207,7 @@ function Home() {
   // Logout handler
   function handleLogout() {
     logout();
-    navigate("/login");
+    navigate(ROUTES.LOGIN);
   }
 
   return (
@@ -227,7 +230,7 @@ function Home() {
 
         <main className={`home-main ${sidebarOpen ? "with-sidebar" : ""}`}>
           {/* If in active tab, show note creation card; otherwise show section header */}
-          {activeTab === "active" ? (
+          {activeTab === NOTE_STATUS.ACTIVE ? (
             <NoteForm
               token={token}
               refreshNotes={() => fetchNotes(searchQuery, activeTab)}
@@ -235,9 +238,9 @@ function Home() {
           ) : (
             <div className="section-header">
               <h2 className="section-title">
-                {activeTab === "archived" ? "📥 Archive" : "🗑️ Trash"}
+                {activeTab === NOTE_STATUS.ARCHIVED ? "📥 Archive" : "🗑️ Trash"}
               </h2>
-              {activeTab === "deleted" && (
+              {activeTab === NOTE_STATUS.DELETED && (
                 <p className="trash-hint">
                   Notes in Trash can be restored or deleted permanently.
                 </p>
@@ -283,3 +286,4 @@ function Home() {
 }
 
 export default Home;
+

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { loginUser, getUserProfile } from "../services/authService";
+import { ROUTES } from "../utils/constants";
 import "../styles/theme.css";
 
 function Login() {
@@ -69,7 +70,7 @@ function Login() {
 
       // Save token & user via AuthContext (persists to localStorage)
       login(data.token, userData);
-      navigate("/");
+      navigate(ROUTES.HOME);
     } catch (error) {
       setErrors(prev => ({
         ...prev,
@@ -160,7 +161,7 @@ function Login() {
         </form>
 
         <p className="auth-footer">
-          Don&apos;t have an account? <Link to="/register">Create one</Link>
+          Don&apos;t have an account? <Link to={ROUTES.REGISTER}>Create one</Link>
         </p>
       </div>
     </div>

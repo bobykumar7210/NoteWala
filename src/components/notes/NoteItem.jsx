@@ -1,10 +1,12 @@
+import { NOTE_STATUS } from "../../utils/constants";
+
 function NoteItem({
   note,
   onOpenModal,
   onDelete,
   onArchive,
   onRestore,
-  activeTab = "active",
+  activeTab = NOTE_STATUS.ACTIVE,
 }) {
   const formattedDate = new Date(note.createdAt).toLocaleDateString("en-IN", {
     day: "numeric",
@@ -22,7 +24,7 @@ function NoteItem({
       <div className="note-footer" onClick={(e) => e.stopPropagation()}>
         <span className="note-date">{formattedDate}</span>
         <div className="note-btns">
-          {activeTab === "deleted" ? (
+          {activeTab === NOTE_STATUS.DELETED ? (
             /* ── Trash Actions: Restore & Delete ── */
             <>
               <button
@@ -46,7 +48,7 @@ function NoteItem({
                 🗑️
               </button>
             </>
-          ) : activeTab === "archived" ? (
+          ) : activeTab === NOTE_STATUS.ARCHIVED ? (
             /* ── Archive Actions: Edit, Unarchive & Delete ── */
             <>
               <button

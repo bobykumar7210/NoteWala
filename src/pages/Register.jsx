@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../services/authService";
+import { ROUTES } from "../utils/constants";
 import "../styles/theme.css";
 
 function Register() {
@@ -88,7 +89,7 @@ function Register() {
       });
 
       setSuccessMessage("Account created! Redirecting to login…");
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate(ROUTES.LOGIN), 1500);
     } catch (error) {
       setErrors(prev => ({
         ...prev,
@@ -249,7 +250,7 @@ function Register() {
         </form>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account? <Link to={ROUTES.LOGIN}>Sign in</Link>
         </p>
       </div>
     </div>

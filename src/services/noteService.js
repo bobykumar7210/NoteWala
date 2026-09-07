@@ -1,4 +1,4 @@
-import { BASE_URL } from "../utils/constants";
+import { BASE_URL, NOTE_STATUS } from "../utils/constants";
 
 /**
  * Fetch notes filtered by status and optional search query / pagination
@@ -6,7 +6,7 @@ import { BASE_URL } from "../utils/constants";
  * @param {{ status?: string, q?: string, page?: number, limit?: number }} options
  * @returns {Promise<{ data: Array, meta?: object }>}
  */
-export async function getAllNotes(token, { status = "active", q = "", page, limit } = {}) {
+export async function getAllNotes(token, { status = NOTE_STATUS.ACTIVE, q = "", page, limit } = {}) {
   const params = new URLSearchParams();
   if (status) params.append("status", status);
   if (q && q.trim()) params.append("q", q.trim());

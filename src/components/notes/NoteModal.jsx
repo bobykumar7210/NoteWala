@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { NOTE_STATUS } from "../../utils/constants";
 
 function NoteModal({
   note,
@@ -7,7 +8,7 @@ function NoteModal({
   onDelete,
   onArchive,
   onRestore,
-  activeTab = "active",
+  activeTab = NOTE_STATUS.ACTIVE,
 }) {
   const [title, setTitle] = useState(note?.title || "");
   const [description, setDescription] = useState(note?.description || "");
@@ -50,7 +51,7 @@ function NoteModal({
     year: "numeric",
   });
 
-  const isTrash = activeTab === "deleted";
+  const isTrash = activeTab === NOTE_STATUS.DELETED;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -104,7 +105,7 @@ function NoteModal({
               >
                 🔄
               </button>
-            ) : activeTab === "archived" ? (
+            ) : activeTab === NOTE_STATUS.ARCHIVED ? (
               <button
                 className="icon-btn unarchive-btn modal-action-btn"
                 title="Unarchive note"
