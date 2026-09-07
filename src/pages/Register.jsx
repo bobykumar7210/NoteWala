@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../services/authService";
-import { ROUTES } from "../utils/constants";
+import { validateRegister } from "../validators";
+import { ROUTES, APP_TITLES } from "../utils/constants";
 import "../styles/theme.css";
 
 function Register() {
@@ -23,7 +24,7 @@ function Register() {
   const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
-    document.title = "Sign Up — Notewala";
+    document.title = APP_TITLES.REGISTER;
   }, []);
 
   function triggerShake() {
@@ -40,37 +41,9 @@ function Register() {
     setErrors(prev => ({ ...prev, [name]: "", server: "" }));
   }
 
-  function validate() {
-    const newErrors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = "Username is required";
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = "Username must be at least 3 characters";
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!formData.email.includes("@")) {
-      newErrors.email = "Enter a valid email";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.confirmPassword !== formData.password) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    if (!formData.terms) {
-      newErrors.terms = "You must accept the terms";
-    }
-    return newErrors;
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
-    const validationErrors = validate();
+    const validationErrors = validateRegister(formData);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       triggerShake();

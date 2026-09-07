@@ -9,7 +9,7 @@ import {
   archiveNote,
   restoreNote,
 } from "../services/noteService";
-import { ROUTES, NOTE_STATUS } from "../utils/constants";
+import { ROUTES, NOTE_STATUS, APP_TITLES } from "../utils/constants";
 import { Navbar, Sidebar } from "../components/layout";
 import { NoteForm, NoteList, NoteModal, ConfirmDeleteModal } from "../components/notes";
 import "../styles/Home.css";
@@ -85,10 +85,10 @@ function Home() {
   useEffect(() => {
     document.title =
       activeTab === NOTE_STATUS.ARCHIVED
-        ? "Archive — Notewala"
+        ? APP_TITLES.ARCHIVE
         : activeTab === NOTE_STATUS.DELETED
-          ? "Trash — Notewala"
-          : "Notewala";
+          ? APP_TITLES.TRASH
+          : APP_TITLES.HOME;
 
     const timer = setTimeout(() => {
       fetchNotes(searchQuery, activeTab);

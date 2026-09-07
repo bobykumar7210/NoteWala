@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { NOTE_STATUS } from "../../utils/constants";
+import { validateNote } from "../../validators";
 
 function NoteModal({
   note,
@@ -13,12 +14,14 @@ function NoteModal({
   const [title, setTitle] = useState(note?.title || "");
   const [description, setDescription] = useState(note?.description || "");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState("");
 
   // Sync state when note prop changes
   useEffect(() => {
     if (note) {
       setTitle(note.title || "");
       setDescription(note.description || "");
+      setError("");
     }
   }, [note]);
 
@@ -36,10 +39,18 @@ function NoteModal({
   if (!note) return null;
 
   async function handleSave() {
-    if (!title.trim()) return;
+    const validationErrors = validateNote({ title, description });
+    if (Object.keys(validationErrors).length > 0) {
+      setError(validationErrors.title || validationErrors.description || "Invalid note");
+      return;
+    }
+
+    setError("");
     setIsUpdating(true);
     try {
-      await onUpdate(note._id, { title, description });
+      await onUpdate(note._id, { title: title.trim(), description: description.trim() });
+    } catch (err) {
+      setError(err.message || "Failed to update note");
     } finally {
       setIsUpdating(false);
     }

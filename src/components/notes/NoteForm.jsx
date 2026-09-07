@@ -1,25 +1,32 @@
 import { useState } from "react";
 import { createNote } from "../../services/noteService";
+import { validateNote } from "../../validators";
 
 function NoteForm({ token, refreshNotes }) {
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!title.trim()) return;
+    const validationErrors = validateNote({ title, description });
+    if (Object.keys(validationErrors).length > 0) {
+      setError(validationErrors.title || validationErrors.description || "Invalid note");
+      return;
+    }
 
+    setError("");
     setIsCreating(true);
     try {
-      await createNote(token, { title: title.trim(), description });
+      await createNote(token, { title: title.trim(), description: description.trim() });
       setTitle("");
       setDescription("");
       setFormOpen(false);
       if (refreshNotes) refreshNotes();
     } catch (err) {
-      console.error("Failed to create note:", err);
+      setError(err.message || "Failed to create note");
     } finally {
       setIsCreating(false);
     }

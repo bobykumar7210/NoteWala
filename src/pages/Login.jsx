@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { loginUser, getUserProfile } from "../services/authService";
-import { ROUTES } from "../utils/constants";
+import { validateLogin } from "../validators";
+import { ROUTES, APP_TITLES } from "../utils/constants";
 import "../styles/theme.css";
 
 function Login() {
@@ -16,7 +17,7 @@ function Login() {
   const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
-    document.title = "Sign In — Notewala";
+    document.title = APP_TITLES.LOGIN;
   }, []);
 
   function triggerShake() {
@@ -30,20 +31,9 @@ function Login() {
     setErrors(prev => ({ ...prev, [name]: "", server: "" }));
   }
 
-  function validate() {
-    const newErrors = {};
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
-    return newErrors;
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
-    const validationErrors = validate();
+    const validationErrors = validateLogin(formData);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       triggerShake();
