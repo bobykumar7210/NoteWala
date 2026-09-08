@@ -1,147 +1,171 @@
-import { BASE_URL, NOTE_STATUS } from "../utils/constants";
+import apiClient from "./apiClient";
+import { NOTE_STATUS } from "../utils/constants";
 
 /**
  * Fetch notes filtered by status and optional search query / pagination
- * @param {string} token
- * @param {{ status?: string, q?: string, page?: number, limit?: number }} options
+ * Supports calling as getAllNotes(token, options) or getAllNotes(options)
+ * @param {string|object} [tokenOrOptions]
+ * @param {object} [maybeOptions]
  * @returns {Promise<{ data: Array, meta?: object }>}
  */
-export async function getAllNotes(token, { status = NOTE_STATUS.ACTIVE, q = "", page, limit } = {}) {
+export async function getAllNotes(tokenOrOptions, maybeOptions) {
+  const token = typeof tokenOrOptions === "string" ? tokenOrOptions : undefined;
+  const options =
+    typeof tokenOrOptions === "object" && tokenOrOptions !== null
+      ? tokenOrOptions
+      : maybeOptions || {};
+
+  const { status = NOTE_STATUS.ACTIVE, q = "", page, limit } = options;
+
   const params = new URLSearchParams();
   if (status) params.append("status", status);
   if (q && q.trim()) params.append("q", q.trim());
   if (page) params.append("page", page);
   if (limit) params.append("limit", limit);
 
-  const res = await fetch(`${BASE_URL}/notes?${params.toString()}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.message || "Failed to fetch notes");
+  const fetchOptions = { method: "GET" };
+  if (token) {
+    fetchOptions.headers = { Authorization: `Bearer ${token}` };
   }
-  return data;
+
+  return apiClient(`/notes?${params.toString()}`, fetchOptions);
 }
 
 /**
  * Fetch a single note by ID
- * @param {string} token
- * @param {string} id
+ * Supports calling as getNoteById(token, id) or getNoteById(id)
+ * @param {string} tokenOrId
+ * @param {string} [maybeId]
  * @returns {Promise<object>}
  */
-export async function getNoteById(token, id) {
-  const res = await fetch(`${BASE_URL}/notes/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function getNoteById(tokenOrId, maybeId) {
+  const id = maybeId || tokenOrId;
+  const token = maybeId ? tokenOrId : undefined;
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.message || "Failed to fetch note");
+  const fetchOptions = { method: "GET" };
+  if (token) {
+    fetchOptions.headers = { Authorization: `Bearer ${token}` };
   }
-  return data.data || data;
+
+  const res = await apiClient(`/notes/${id}`, fetchOptions);
+  return res.data || res;
 }
 
 /**
  * Create a new note
- * @param {string} token
- * @param {{ title: string, description?: string }} noteData
+ * Supports calling as createNote(token, noteData) or createNote(noteData)
+ * @param {string|object} tokenOrData
+ * @param {object} [maybeData]
  * @returns {Promise<object>}
  */
-export async function createNote(token, { title, description = "" }) {
-  const res = await fetch(`${BASE_URL}/notes`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ title, description }),
-  });
+export async function createNote(tokenOrData, maybeData) {
+  const noteData = maybeData || tokenOrData || {};
+  const token = maybeData ? tokenOrData : undefined;
+  const { title, description = "" } = noteData;
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.message || "Failed to create note");
+  const fetchOptions = {
+    method: "POST",
+    body: JSON.stringify({ title, description }),
+  };
+  if (token) {
+    fetchOptions.headers = { Authorization: `Bearer ${token}` };
   }
-  return data.data || data;
+
+  const res = await apiClient("/notes", fetchOptions);
+  return res.data || res;
 }
 
 /**
  * Update an existing note
- * @param {string} token
- * @param {string} id
- * @param {{ title: string, description?: string }} updateData
+ * Supports calling as updateNote(token, id, updateData) or updateNote(id, updateData)
+ * @param {string} tokenOrId
+ * @param {string|object} idOrData
+ * @param {object} [maybeData]
  * @returns {Promise<object>}
  */
-export async function updateNote(token, id, { title, description = "" }) {
-  const res = await fetch(`${BASE_URL}/notes/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ title, description }),
-  });
+export async function updateNote(tokenOrId, idOrData, maybeData) {
+  let token;
+  let id;
+  let updateData;
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.message || "Failed to update note");
+  if (maybeData !== undefined) {
+    token = tokenOrId;
+    id = idOrData;
+    updateData = maybeData;
+  } else {
+    id = tokenOrId;
+    updateData = idOrData || {};
   }
-  return data.data || data;
+
+  const { title, description = "" } = updateData;
+  const fetchOptions = {
+    method: "PUT",
+    body: JSON.stringify({ title, description }),
+  };
+  if (token) {
+    fetchOptions.headers = { Authorization: `Bearer ${token}` };
+  }
+
+  const res = await apiClient(`/notes/${id}`, fetchOptions);
+  return res.data || res;
 }
 
 /**
  * Soft delete a note (move to trash)
- * @param {string} token
- * @param {string} id
+ * Supports calling as deleteNote(token, id) or deleteNote(id)
+ * @param {string} tokenOrId
+ * @param {string} [maybeId]
  * @returns {Promise<object>}
  */
-export async function deleteNote(token, id) {
-  const res = await fetch(`${BASE_URL}/notes/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function deleteNote(tokenOrId, maybeId) {
+  const id = maybeId || tokenOrId;
+  const token = maybeId ? tokenOrId : undefined;
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.message || "Failed to delete note");
+  const fetchOptions = { method: "DELETE" };
+  if (token) {
+    fetchOptions.headers = { Authorization: `Bearer ${token}` };
   }
-  return data;
+
+  return apiClient(`/notes/${id}`, fetchOptions);
 }
 
 /**
  * Archive an active note
- * @param {string} token
- * @param {string} id
+ * Supports calling as archiveNote(token, id) or archiveNote(id)
+ * @param {string} tokenOrId
+ * @param {string} [maybeId]
  * @returns {Promise<object>}
  */
-export async function archiveNote(token, id) {
-  const res = await fetch(`${BASE_URL}/notes/${id}/archive`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function archiveNote(tokenOrId, maybeId) {
+  const id = maybeId || tokenOrId;
+  const token = maybeId ? tokenOrId : undefined;
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.message || "Failed to archive note");
+  const fetchOptions = { method: "PATCH" };
+  if (token) {
+    fetchOptions.headers = { Authorization: `Bearer ${token}` };
   }
-  return data.data || data;
+
+  const res = await apiClient(`/notes/${id}/archive`, fetchOptions);
+  return res.data || res;
 }
 
 /**
  * Restore an archived or deleted note
- * @param {string} token
- * @param {string} id
+ * Supports calling as restoreNote(token, id) or restoreNote(id)
+ * @param {string} tokenOrId
+ * @param {string} [maybeId]
  * @returns {Promise<object>}
  */
-export async function restoreNote(token, id) {
-  const res = await fetch(`${BASE_URL}/notes/${id}/restore`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function restoreNote(tokenOrId, maybeId) {
+  const id = maybeId || tokenOrId;
+  const token = maybeId ? tokenOrId : undefined;
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.message || "Failed to restore note");
+  const fetchOptions = { method: "PATCH" };
+  if (token) {
+    fetchOptions.headers = { Authorization: `Bearer ${token}` };
   }
-  return data.data || data;
+
+  const res = await apiClient(`/notes/${id}/restore`, fetchOptions);
+  return res.data || res;
 }
+

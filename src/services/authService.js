@@ -1,4 +1,4 @@
-import { BASE_URL } from "../utils/constants";
+import apiClient from "./apiClient";
 
 /**
  * Log in user with username and password
@@ -6,19 +6,10 @@ import { BASE_URL } from "../utils/constants";
  * @returns {Promise<{ token: string, user?: object }>}
  */
 export async function loginUser({ username, password }) {
-  const response = await fetch(`${BASE_URL}/users/login`, {
+  return apiClient("/users/login", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data?.message || "Login failed");
-  }
-
-  return data;
 }
 
 /**
@@ -27,39 +18,24 @@ export async function loginUser({ username, password }) {
  * @returns {Promise<object>}
  */
 export async function registerUser({ username, email, password }) {
-  const response = await fetch(`${BASE_URL}/users/register`, {
+  return apiClient("/users/register", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, email, password }),
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data?.message || "Registration failed");
-  }
-
-  return data;
 }
 
 /**
  * Fetch the authenticated user's profile
- * @param {string} token
+ * @param {string} [token]
  * @returns {Promise<object>}
  */
 export async function getUserProfile(token) {
-  const response = await fetch(`${BASE_URL}/users/profile`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data?.message || "Failed to fetch profile");
+  const options = { method: "GET" };
+  if (token) {
+    options.headers = { Authorization: `Bearer ${token}` };
   }
 
+  const data = await apiClient("/users/profile", options);
   return data.data || data;
 }
+

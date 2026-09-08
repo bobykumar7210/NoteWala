@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { STORAGE_KEYS } from "../utils/constants";
 
 const AuthContext = createContext(null);
@@ -13,19 +13,31 @@ export function AuthProvider({ children }) {
     }
   });
 
-  function login(token, userData) {
-    localStorage.setItem(STORAGE_KEYS.TOKEN, token);
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
-    setToken(token);
-    setUser(userData);
-  }
-
-  function logout() {
+  const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
     setToken(null);
     setUser(null);
+  }, []);
+
+  function login(newToken, userData) {
+    localStorage.setItem(STORAGE_KEYS.TOKEN, newToken);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+    setToken(newToken);
+    setUser(userData);
   }
+
+  // Listen for session expiry / 401 events from apiClient
+  useEffect(() => {
+    function handleSessionExpired() {
+      logout();
+    }
+
+    window.addEventListener("auth:expired", handleSessionExpired);
+    return () => {
+      window.removeEventListener("auth:expired", handleSessionExpired);
+    };
+  }, [logout]);
 
   const isAuthenticated = !!token;
 
@@ -39,3 +51,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+
