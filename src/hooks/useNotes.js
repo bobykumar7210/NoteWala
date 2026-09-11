@@ -1,31 +1,56 @@
-import { useState, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
 import {
-  getAllNotes,
-  getNoteById,
-  updateNote as apiUpdateNote,
-  deleteNote as apiDeleteNote,
-  archiveNote as apiArchiveNote,
-  restoreNote as apiRestoreNote,
-} from "../services/noteService";
+  selectAllNotes,
+  selectIsLoadingNotes,
+  selectActiveNote,
+  selectSearchQuery,
+  selectActiveTab,
+  selectNoteToDelete,
+  selectIsDeleting,
+} from "../redux/selectors/noteSelectors";
+import {
+  selectAuthToken,
+  selectCurrentUser,
+} from "../redux/selectors/authSelectors";
+import {
+  fetchNotesThunk,
+  fetchSingleNoteThunk,
+  updateNoteThunk,
+  archiveNoteThunk,
+  restoreNoteThunk,
+  deleteNoteThunk,
+  setActiveNote,
+  clearActiveNote,
+  setSearchQuery as setReduxSearchQuery,
+  setActiveTab as setReduxActiveTab,
+  setNoteToDelete as setReduxNoteToDelete,
+  clearNoteToDelete,
+} from "../redux/actions/noteActions";
+import { logoutUserThunk } from "../redux/actions/authActions";
 import { ROUTES, NOTE_STATUS, APP_TITLES } from "../utils/constants";
 
 /**
- * Custom hook encapsulating all notes state, fetching, mutations, and URL route synchronization
+ * Custom hook encapsulating all notes state via Traditional Redux,
+ * fetching, mutations, and URL route synchronization
  */
 export function useNotes() {
-  const { token, user, logout } = useAuth();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { id: routeNoteId } = useParams();
 
-  const [notes, setNotes] = useState([]);
-  const [isLoadingNotes, setIsLoadingNotes] = useState(true);
-  const [activeNote, setActiveNote] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [noteToDelete, setNoteToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // Redux Selectors
+  const token = useSelector(selectAuthToken);
+  const user = useSelector(selectCurrentUser);
+  const notes = useSelector(selectAllNotes);
+  const isLoadingNotes = useSelector(selectIsLoadingNotes);
+  const activeNote = useSelector(selectActiveNote);
+  const searchQuery = useSelector(selectSearchQuery);
+  const activeTab = useSelector(selectActiveTab);
+  const noteToDelete = useSelector(selectNoteToDelete);
+  const isDeleting = useSelector(selectIsDeleting);
 
   // Derive base section path using ROUTES constants
   const basePath = location.pathname.startsWith(ROUTES.ARCHIVE)
@@ -34,52 +59,54 @@ export function useNotes() {
       ? ROUTES.TRASH
       : ROUTES.HOME;
 
-  // Derive active tab using NOTE_STATUS constants
-  const activeTab =
+  // Derive current status tab from URL path
+  const urlTab =
     basePath === ROUTES.ARCHIVE
       ? NOTE_STATUS.ARCHIVED
       : basePath === ROUTES.TRASH
         ? NOTE_STATUS.DELETED
         : NOTE_STATUS.ACTIVE;
 
+  // Keep Redux activeTab in sync with URL
+  useEffect(() => {
+    if (activeTab !== urlTab) {
+      dispatch(setReduxActiveTab(urlTab));
+    }
+  }, [urlTab, activeTab, dispatch]);
+
   // Reset search input when navigating to a different main section
   useEffect(() => {
-    setSearchQuery("");
-  }, [basePath]);
+    dispatch(setReduxSearchQuery(""));
+  }, [basePath, dispatch]);
 
-  // Fetch notes from backend based on status and search query
-  async function fetchNotes(query = searchQuery, tab = activeTab) {
-    setIsLoadingNotes(true);
-    try {
-      const res = await getAllNotes(token, { status: tab, q: query });
-      setNotes(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch notes:", err);
-    } finally {
-      setIsLoadingNotes(false);
-    }
-  }
+  // Fetch notes dispatch helper
+  const fetchNotes = useCallback(
+    (query = searchQuery, tab = urlTab) => {
+      return dispatch(fetchNotesThunk({ query, tab }));
+    },
+    [dispatch, searchQuery, urlTab]
+  );
 
-  // Set document title and trigger debounced fetch on searchQuery / activeTab change
+  // Set document title and trigger debounced fetch on searchQuery / urlTab change
   useEffect(() => {
     document.title =
-      activeTab === NOTE_STATUS.ARCHIVED
+      urlTab === NOTE_STATUS.ARCHIVED
         ? APP_TITLES.ARCHIVE
-        : activeTab === NOTE_STATUS.DELETED
+        : urlTab === NOTE_STATUS.DELETED
           ? APP_TITLES.TRASH
           : APP_TITLES.HOME;
 
     const timer = setTimeout(() => {
-      fetchNotes(searchQuery, activeTab);
+      fetchNotes(searchQuery, urlTab);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, activeTab]);
+  }, [searchQuery, urlTab, fetchNotes]);
 
   // Sync activeNote with URL routeNoteId (supports direct URL access, refresh, back/forward)
   useEffect(() => {
     if (!routeNoteId) {
-      if (activeNote) setActiveNote(null);
+      if (activeNote) dispatch(clearActiveNote());
       return;
     }
 
@@ -89,35 +116,32 @@ export function useNotes() {
 
     const found = notes.find((n) => n._id === routeNoteId);
     if (found) {
-      setActiveNote(found);
+      dispatch(setActiveNote(found));
       return;
     }
 
     if (token) {
       let isMounted = true;
-      async function fetchSingleNote() {
-        try {
-          const noteData = await getNoteById(token, routeNoteId);
+      dispatch(fetchSingleNoteThunk(routeNoteId))
+        .then((noteData) => {
           if (!isMounted) return;
-          if (noteData) {
-            setActiveNote(noteData);
-          } else {
+          if (!noteData) {
             navigate(basePath, { replace: true });
           }
-        } catch {
+        })
+        .catch(() => {
           if (isMounted) navigate(basePath, { replace: true });
-        }
-      }
-      fetchSingleNote();
+        });
+
       return () => {
         isMounted = false;
       };
     }
-  }, [routeNoteId, notes, token, basePath, navigate, activeNote]);
+  }, [routeNoteId, notes, token, basePath, navigate, activeNote, dispatch]);
 
   // Open note modal and update browser URL
   function handleOpenModal(note) {
-    setActiveNote(note);
+    dispatch(setActiveNote(note));
     const targetUrl =
       basePath === ROUTES.HOME
         ? ROUTES.NOTE(note._id)
@@ -127,7 +151,7 @@ export function useNotes() {
 
   // Close note modal and return browser URL back to section base
   function handleCloseModal() {
-    setActiveNote(null);
+    dispatch(clearActiveNote());
     if (routeNoteId) {
       navigate(basePath);
     }
@@ -136,9 +160,8 @@ export function useNotes() {
   // Update note mutation
   async function handleUpdate(id, { title, description }) {
     try {
-      await apiUpdateNote(token, id, { title, description });
+      await dispatch(updateNoteThunk(id, { title, description }));
       handleCloseModal();
-      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to update note:", err);
     }
@@ -147,11 +170,10 @@ export function useNotes() {
   // Archive note mutation
   async function handleArchive(note) {
     try {
-      await apiArchiveNote(token, note._id);
+      await dispatch(archiveNoteThunk(note));
       if (activeNote?._id === note._id) {
         handleCloseModal();
       }
-      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to archive note:", err);
     }
@@ -160,11 +182,10 @@ export function useNotes() {
   // Restore note mutation
   async function handleRestore(note) {
     try {
-      await apiRestoreNote(token, note._id);
+      await dispatch(restoreNoteThunk(note));
       if (activeNote?._id === note._id) {
         handleCloseModal();
       }
-      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to restore note:", err);
     }
@@ -173,34 +194,29 @@ export function useNotes() {
   // Request note deletion (opens confirmation modal)
   function requestDelete(noteOrId) {
     if (typeof noteOrId === "object" && noteOrId !== null) {
-      setNoteToDelete(noteOrId);
+      dispatch(setReduxNoteToDelete(noteOrId));
     } else {
       const found = notes.find((n) => n._id === noteOrId);
-      setNoteToDelete(found || { _id: noteOrId, title: "" });
+      dispatch(setReduxNoteToDelete(found || { _id: noteOrId, title: "" }));
     }
   }
 
   // Confirm delete mutation
   async function confirmDelete() {
     if (!noteToDelete?._id) return;
-    setIsDeleting(true);
     try {
-      await apiDeleteNote(token, noteToDelete._id);
+      await dispatch(deleteNoteThunk(noteToDelete._id));
       if (activeNote?._id === noteToDelete._id) {
         handleCloseModal();
       }
-      setNoteToDelete(null);
-      fetchNotes(searchQuery, activeTab);
     } catch (err) {
       console.error("Failed to delete note:", err);
-    } finally {
-      setIsDeleting(false);
     }
   }
 
   // Logout and navigate to login
   function handleLogout() {
-    logout();
+    dispatch(logoutUserThunk());
     navigate(ROUTES.LOGIN);
   }
 
@@ -208,11 +224,12 @@ export function useNotes() {
     notes,
     isLoadingNotes,
     activeNote,
-    activeTab,
+    activeTab: urlTab,
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: (q) => dispatch(setReduxSearchQuery(q)),
     noteToDelete,
-    setNoteToDelete,
+    setNoteToDelete: (note) =>
+      note ? dispatch(setReduxNoteToDelete(note)) : dispatch(clearNoteToDelete()),
     isDeleting,
     requestDelete,
     confirmDelete,

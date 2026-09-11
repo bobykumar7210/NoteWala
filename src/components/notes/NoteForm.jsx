@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { createNote } from "../../services/noteService";
+import { useDispatch } from "react-redux";
+import { createNoteThunk } from "../../redux/actions/noteActions";
 import { validateNote } from "../../validators";
 
-function NoteForm({ token, refreshNotes }) {
+function NoteForm({ refreshNotes }) {
+  const dispatch = useDispatch();
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -20,7 +22,9 @@ function NoteForm({ token, refreshNotes }) {
     setError("");
     setIsCreating(true);
     try {
-      await createNote(token, { title: title.trim(), description: description.trim() });
+      await dispatch(
+        createNoteThunk({ title: title.trim(), description: description.trim() })
+      );
       setTitle("");
       setDescription("");
       setFormOpen(false);
@@ -35,6 +39,7 @@ function NoteForm({ token, refreshNotes }) {
   function handleCancel() {
     setTitle("");
     setDescription("");
+    setError("");
     setFormOpen(false);
   }
 
@@ -65,6 +70,7 @@ function NoteForm({ token, refreshNotes }) {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
+            {error && <p className="field-error" style={{ margin: "4px 8px" }}>{error}</p>}
             <div className="create-actions">
               <button
                 type="button"

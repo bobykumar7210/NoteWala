@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../services/authService";
+import { useDispatch, useSelector } from "react-redux";
+import { registerUserThunk, clearAuthError } from "../redux/actions/authActions";
+import { selectAuthLoading, selectAuthError } from "../redux/selectors/authSelectors";
 import { validateRegister } from "../validators";
 import { ROUTES, APP_TITLES } from "../utils/constants";
 
 /**
- * Custom hook encapsulating registration form state, validation, and submission logic
+ * Custom hook encapsulating registration form state, validation, and submission logic via Redux
  */
 export function useRegister() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const reduxLoading = useSelector(selectAuthLoading);
+  const reduxError = useSelector(selectAuthError);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -19,7 +24,6 @@ export function useRegister() {
   });
 
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -27,7 +31,8 @@ export function useRegister() {
 
   useEffect(() => {
     document.title = APP_TITLES.REGISTER;
-  }, []);
+    dispatch(clearAuthError());
+  }, [dispatch]);
 
   function triggerShake() {
     setIsShaking(true);
@@ -54,32 +59,31 @@ export function useRegister() {
 
     setErrors({});
     setSuccessMessage("");
-    setIsLoading(true);
 
     try {
-      await registerUser({
-        username: formData.name.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-      });
+      await dispatch(
+        registerUserThunk({
+          username: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+        })
+      );
 
       setSuccessMessage("Account created! Redirecting to login…");
       setTimeout(() => navigate(ROUTES.LOGIN), 1500);
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
-        server: error.message || "Something went wrong. Please try again.",
+        server: error.message || reduxError || "Something went wrong. Please try again.",
       }));
       triggerShake();
-    } finally {
-      setIsLoading(false);
     }
   }
 
   return {
     formData,
     errors,
-    isLoading,
+    isLoading: reduxLoading,
     successMessage,
     showPassword,
     setShowPassword,

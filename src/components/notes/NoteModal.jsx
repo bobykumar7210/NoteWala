@@ -11,19 +11,19 @@ function NoteModal({
   onRestore,
   activeTab = NOTE_STATUS.ACTIVE,
 }) {
+  const [prevNoteId, setPrevNoteId] = useState(note?._id);
   const [title, setTitle] = useState(note?.title || "");
   const [description, setDescription] = useState(note?.description || "");
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState("");
 
-  // Sync state when note prop changes
-  useEffect(() => {
-    if (note) {
-      setTitle(note.title || "");
-      setDescription(note.description || "");
-      setError("");
-    }
-  }, [note]);
+  // Update state during render when note prop changes
+  if (note && note._id !== prevNoteId) {
+    setPrevNoteId(note._id);
+    setTitle(note.title || "");
+    setDescription(note.description || "");
+    setError("");
+  }
 
   // Close modal when pressing Escape
   useEffect(() => {
@@ -98,6 +98,8 @@ function NoteModal({
           disabled={isTrash}
           rows={6}
         />
+
+        {error && <div className="field-error" style={{ margin: "4px 16px" }}>{error}</div>}
 
         {/* ── Footer ── */}
         <div className="modal-footer">

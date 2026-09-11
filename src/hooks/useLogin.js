@@ -1,26 +1,29 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { loginUser, getUserProfile } from "../services/authService";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUserThunk, clearAuthError } from "../redux/actions/authActions";
+import { selectAuthLoading, selectAuthError } from "../redux/selectors/authSelectors";
 import { validateLogin } from "../validators";
 import { ROUTES, APP_TITLES } from "../utils/constants";
 
 /**
- * Custom hook encapsulating login form state, validation, and submission logic
+ * Custom hook encapsulating login form state, validation, and submission logic via Redux
  */
 export function useLogin() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const reduxLoading = useSelector(selectAuthLoading);
+  const reduxError = useSelector(selectAuthError);
 
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
     document.title = APP_TITLES.LOGIN;
-  }, []);
+    dispatch(clearAuthError());
+  }, [dispatch]);
 
   function triggerShake() {
     setIsShaking(true);
@@ -43,39 +46,28 @@ export function useLogin() {
     }
 
     setErrors({});
-    setIsLoading(true);
 
     try {
-      const data = await loginUser({
-        username: formData.username.trim(),
-        password: formData.password,
-      });
-
-      let userData = { username: formData.username.trim() };
-      try {
-        const profile = await getUserProfile(data.token);
-        if (profile) userData = profile;
-      } catch {
-        // Fallback to username if profile request fails
-      }
-
-      login(data.token, userData);
+      await dispatch(
+        loginUserThunk({
+          username: formData.username.trim(),
+          password: formData.password,
+        })
+      );
       navigate(ROUTES.HOME);
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
-        server: error.message || "Something went wrong. Please try again.",
+        server: error.message || reduxError || "Something went wrong. Please try again.",
       }));
       triggerShake();
-    } finally {
-      setIsLoading(false);
     }
   }
 
   return {
     formData,
     errors,
-    isLoading,
+    isLoading: reduxLoading,
     showPassword,
     setShowPassword,
     isShaking,
