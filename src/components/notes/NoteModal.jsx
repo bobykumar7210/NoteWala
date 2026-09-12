@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { NOTE_STATUS } from "../../utils/constants";
 import { validateNote } from "../../validators";
+import { CloseIcon, RestoreIcon, UnarchiveIcon, ArchiveIcon, TrashIcon } from "../common/Icons";
 
 function NoteModal({
   note,
@@ -84,7 +85,7 @@ function NoteModal({
             title="Close"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon size={18} color="#ffffff" />
           </button>
         </div>
 
@@ -116,7 +117,7 @@ function NoteModal({
                   onClose();
                 }}
               >
-                🔄
+                <RestoreIcon size={16} color="#ffffff" />
               </button>
             ) : activeTab === NOTE_STATUS.ARCHIVED ? (
               <button
@@ -127,7 +128,7 @@ function NoteModal({
                   onClose();
                 }}
               >
-                📤
+                <UnarchiveIcon size={16} color="#ffffff" />
               </button>
             ) : (
               <button
@@ -138,7 +139,7 @@ function NoteModal({
                   onClose();
                 }}
               >
-                📥
+                <ArchiveIcon size={16} color="#ffffff" />
               </button>
             )}
 
@@ -148,7 +149,7 @@ function NoteModal({
               title={isTrash ? "Delete permanently" : "Delete note"}
               onClick={() => onDelete(note)}
             >
-              🗑️
+              <TrashIcon size={16} color="#ffffff" />
             </button>
           </div>
 
@@ -164,7 +165,7 @@ function NoteModal({
               <button
                 id="modal-save-btn"
                 type="button"
-                className="btn-teal"
+                className="btn-blue"
                 disabled={isUpdating || !title.trim()}
                 onClick={handleSave}
               >

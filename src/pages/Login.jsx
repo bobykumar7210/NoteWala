@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 import { useLogin } from "../hooks";
 import { ROUTES } from "../utils/constants";
+import {
+  LogoIcon,
+  UserIcon,
+  LockIcon,
+  EyeIcon,
+  EyeOffIcon,
+  AlertIcon,
+} from "../components/common/Icons";
 import "../styles/theme.css";
 
 function Login() {
@@ -20,7 +28,9 @@ function Login() {
       <div className={`auth-card ${isShaking ? "shake" : ""}`}>
         {/* Logo */}
         <div className="auth-logo">
-          <div className="auth-logo-icon">📝</div>
+          <div className="auth-logo-icon">
+            <LogoIcon size={24} color="#ffffff" />
+          </div>
           <span className="auth-logo-text">Notewala</span>
         </div>
 
@@ -42,7 +52,9 @@ function Login() {
                 autoComplete="username"
                 autoFocus
               />
-              <span className="icon">👤</span>
+              <span className="icon">
+                <UserIcon size={18} color="#ffffff" />
+              </span>
             </div>
             {errors.username && <span className="field-error">{errors.username}</span>}
           </div>
@@ -61,7 +73,9 @@ function Login() {
                 onChange={handleChange}
                 autoComplete="current-password"
               />
-              <span className="icon">🔒</span>
+              <span className="icon">
+                <LockIcon size={18} color="#ffffff" />
+              </span>
               <button
                 type="button"
                 className="password-toggle-btn"
@@ -70,7 +84,11 @@ function Login() {
                 title={showPassword ? "Hide password" : "Show password"}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? "👁️" : "🙈"}
+                {showPassword ? (
+                  <EyeOffIcon size={18} color="#ffffff" />
+                ) : (
+                  <EyeIcon size={18} color="#ffffff" />
+                )}
               </button>
             </div>
             {errors.password && <span className="field-error">{errors.password}</span>}
@@ -78,7 +96,10 @@ function Login() {
 
           {/* Server error */}
           {errors.server && (
-            <div className="alert alert-error">⚠️ {errors.server}</div>
+            <div className="alert alert-error">
+              <AlertIcon size={18} color="#ffffff" />
+              <span>{errors.server}</span>
+            </div>
           )}
 
           <button id="login-submit" type="submit" className="btn-primary" disabled={isLoading}>

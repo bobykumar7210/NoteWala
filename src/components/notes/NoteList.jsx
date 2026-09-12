@@ -1,5 +1,6 @@
 import NoteItem from "./NoteItem";
 import { NOTE_STATUS } from "../../utils/constants";
+import { EmptyNotesIcon, SearchIcon, ArchiveIcon, TrashIcon } from "../common/Icons";
 
 function NoteList({
   notes,
@@ -34,17 +35,17 @@ function NoteList({
         ? "trash"
         : "notes";
 
-    let emptyIcon = "📋";
+    let emptyIcon = <EmptyNotesIcon size={52} color="#ffffff" />;
     let emptyMessage = "No notes yet — create your first one above!";
 
     if (searchQuery) {
-      emptyIcon = "🔍";
+      emptyIcon = <SearchIcon size={48} color="#ffffff" />;
       emptyMessage = `No notes matching "${searchQuery}" in ${tabName}`;
     } else if (activeTab === NOTE_STATUS.ARCHIVED) {
-      emptyIcon = "📥";
+      emptyIcon = <ArchiveIcon size={48} color="#ffffff" />;
       emptyMessage = "Your archived notes appear here";
     } else if (activeTab === NOTE_STATUS.DELETED) {
-      emptyIcon = "🗑️";
+      emptyIcon = <TrashIcon size={48} color="#ffffff" />;
       emptyMessage = "No notes in Trash";
     }
 

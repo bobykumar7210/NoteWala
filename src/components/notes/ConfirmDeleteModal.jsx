@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { TrashIcon } from "../common/Icons";
 
 function ConfirmDeleteModal({ note, isOpen, onConfirm, onCancel, isDeleting }) {
   // Close on Escape key
@@ -23,7 +24,9 @@ function ConfirmDeleteModal({ note, isOpen, onConfirm, onCancel, isDeleting }) {
         aria-modal="true"
       >
         <div className="confirm-icon-wrapper">
-          <span className="confirm-icon">🗑️</span>
+          <span className="confirm-icon">
+            <TrashIcon size={24} color="#ffffff" />
+          </span>
         </div>
 
         <h3 className="confirm-title">Delete Note?</h3>

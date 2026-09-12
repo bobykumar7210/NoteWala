@@ -3,6 +3,7 @@ import { useNotes } from "../hooks";
 import { Navbar, Sidebar } from "../components/layout";
 import { NoteForm, NoteList, NoteModal, ConfirmDeleteModal } from "../components/notes";
 import { NOTE_STATUS } from "../utils/constants";
+import { ArchiveIcon, TrashIcon } from "../components/common/Icons";
 import "../styles/Home.css";
 
 function Home() {
@@ -59,7 +60,17 @@ function Home() {
           ) : (
             <div className="section-header">
               <h2 className="section-title">
-                {activeTab === NOTE_STATUS.ARCHIVED ? "📥 Archive" : "🗑️ Trash"}
+                {activeTab === NOTE_STATUS.ARCHIVED ? (
+                  <>
+                    <ArchiveIcon size={24} color="#ffffff" />
+                    <span>Archive</span>
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon size={24} color="#ffffff" />
+                    <span>Trash</span>
+                  </>
+                )}
               </h2>
               {activeTab === NOTE_STATUS.DELETED && (
                 <p className="trash-hint">

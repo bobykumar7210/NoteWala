@@ -1,6 +1,17 @@
 import { Link } from "react-router-dom";
 import { useRegister } from "../hooks";
 import { ROUTES } from "../utils/constants";
+import {
+  LogoIcon,
+  UserIcon,
+  MailIcon,
+  LockIcon,
+  KeyIcon,
+  EyeIcon,
+  EyeOffIcon,
+  AlertIcon,
+  CheckIcon,
+} from "../components/common/Icons";
 import "../styles/theme.css";
 
 function Register() {
@@ -23,7 +34,9 @@ function Register() {
       <div className={`auth-card ${isShaking ? "shake" : ""}`}>
         {/* Logo */}
         <div className="auth-logo">
-          <div className="auth-logo-icon">📝</div>
+          <div className="auth-logo-icon">
+            <LogoIcon size={24} color="#ffffff" />
+          </div>
           <span className="auth-logo-text">Notewala</span>
         </div>
 
@@ -44,7 +57,9 @@ function Register() {
                 onChange={handleChange}
                 autoComplete="username"
               />
-              <span className="icon">👤</span>
+              <span className="icon">
+                <UserIcon size={18} color="#ffffff" />
+              </span>
             </div>
             {errors.name && <span className="field-error">{errors.name}</span>}
           </div>
@@ -62,7 +77,9 @@ function Register() {
                 onChange={handleChange}
                 autoComplete="email"
               />
-              <span className="icon">✉️</span>
+              <span className="icon">
+                <MailIcon size={18} color="#ffffff" />
+              </span>
             </div>
             {errors.email && <span className="field-error">{errors.email}</span>}
           </div>
@@ -81,7 +98,9 @@ function Register() {
                 onChange={handleChange}
                 autoComplete="new-password"
               />
-              <span className="icon">🔒</span>
+              <span className="icon">
+                <LockIcon size={18} color="#ffffff" />
+              </span>
               <button
                 type="button"
                 className="password-toggle-btn"
@@ -90,7 +109,11 @@ function Register() {
                 title={showPassword ? "Hide password" : "Show password"}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? "👁️" : "🙈"}
+                {showPassword ? (
+                  <EyeOffIcon size={18} color="#ffffff" />
+                ) : (
+                  <EyeIcon size={18} color="#ffffff" />
+                )}
               </button>
             </div>
             {errors.password && <span className="field-error">{errors.password}</span>}
@@ -110,7 +133,9 @@ function Register() {
                 onChange={handleChange}
                 autoComplete="new-password"
               />
-              <span className="icon">🔑</span>
+              <span className="icon">
+                <KeyIcon size={18} color="#ffffff" />
+              </span>
               <button
                 type="button"
                 className="password-toggle-btn"
@@ -119,7 +144,11 @@ function Register() {
                 title={showConfirmPassword ? "Hide password" : "Show password"}
                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
-                {showConfirmPassword ? "👁️" : "🙈"}
+                {showConfirmPassword ? (
+                  <EyeOffIcon size={18} color="#ffffff" />
+                ) : (
+                  <EyeIcon size={18} color="#ffffff" />
+                )}
               </button>
             </div>
             {errors.confirmPassword && (
@@ -148,10 +177,16 @@ function Register() {
 
           {/* Alerts */}
           {errors.server && (
-            <div className="alert alert-error">⚠️ {errors.server}</div>
+            <div className="alert alert-error">
+              <AlertIcon size={18} color="#ffffff" />
+              <span>{errors.server}</span>
+            </div>
           )}
           {successMessage && (
-            <div className="alert alert-success">✅ {successMessage}</div>
+            <div className="alert alert-success">
+              <CheckIcon size={18} color="#ffffff" />
+              <span>{successMessage}</span>
+            </div>
           )}
 
           <button id="register-submit" type="submit" className="btn-primary" disabled={isLoading}>

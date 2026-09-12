@@ -1,3 +1,5 @@
+import { MenuIcon, LogoIcon, SearchIcon, CloseIcon, UserIcon, LogoutIcon } from "../common/Icons";
+
 function Navbar({ user, onLogout, searchQuery, onSearchChange, onToggleSidebar }) {
   return (
     <nav className="navbar">
@@ -11,16 +13,20 @@ function Navbar({ user, onLogout, searchQuery, onSearchChange, onToggleSidebar }
           title="Main menu"
           aria-label="Toggle menu"
         >
-          ☰
+          <MenuIcon size={20} color="#ffffff" />
         </button>
-        <div className="nav-logo-icon">📝</div>
+        <div className="nav-logo-icon">
+          <LogoIcon size={20} color="#ffffff" />
+        </div>
         <span className="nav-logo-text">Notewala</span>
       </div>
 
-      {/* ── Center: Search Bar (Google Keep style) ── */}
+      {/* ── Center: Search Bar ── */}
       <div className="navbar-center">
         <div className="search-bar">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon">
+            <SearchIcon size={18} color="#ffffff" />
+          </span>
           <input
             id="search-notes-input"
             type="text"
@@ -37,7 +43,7 @@ function Navbar({ user, onLogout, searchQuery, onSearchChange, onToggleSidebar }
               onClick={() => onSearchChange("")}
               title="Clear search"
             >
-              ✕
+              <CloseIcon size={16} color="#ffffff" />
             </button>
           )}
         </div>
@@ -45,9 +51,13 @@ function Navbar({ user, onLogout, searchQuery, onSearchChange, onToggleSidebar }
 
       {/* ── Right: User Info & Logout ── */}
       <div className="navbar-right">
-        <span className="nav-user">👤 {user?.username}</span>
+        <span className="nav-user">
+          <UserIcon size={18} color="#ffffff" />
+          <span>{user?.username}</span>
+        </span>
         <button id="logout-btn" className="logout-btn" onClick={onLogout}>
-          Sign out
+          <LogoutIcon size={16} color="#ffffff" />
+          <span>Sign out</span>
         </button>
       </div>
     </nav>

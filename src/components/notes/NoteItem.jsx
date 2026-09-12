@@ -1,4 +1,5 @@
 import { NOTE_STATUS } from "../../utils/constants";
+import { EditIcon, ArchiveIcon, UnarchiveIcon, RestoreIcon, TrashIcon } from "../common/Icons";
 
 function NoteItem({
   note,
@@ -35,7 +36,7 @@ function NoteItem({
                   onRestore(note);
                 }}
               >
-                🔄
+                <RestoreIcon size={16} color="#ffffff" />
               </button>
               <button
                 className="icon-btn delete-btn"
@@ -45,7 +46,7 @@ function NoteItem({
                   onDelete(note);
                 }}
               >
-                🗑️
+                <TrashIcon size={16} color="#ffffff" />
               </button>
             </>
           ) : activeTab === NOTE_STATUS.ARCHIVED ? (
@@ -59,7 +60,7 @@ function NoteItem({
                   onOpenModal(note);
                 }}
               >
-                ✏️
+                <EditIcon size={16} color="#ffffff" />
               </button>
               <button
                 className="icon-btn unarchive-btn"
@@ -69,7 +70,7 @@ function NoteItem({
                   onRestore(note);
                 }}
               >
-                📤
+                <UnarchiveIcon size={16} color="#ffffff" />
               </button>
               <button
                 className="icon-btn delete-btn"
@@ -79,7 +80,7 @@ function NoteItem({
                   onDelete(note);
                 }}
               >
-                🗑️
+                <TrashIcon size={16} color="#ffffff" />
               </button>
             </>
           ) : (
@@ -93,7 +94,7 @@ function NoteItem({
                   onOpenModal(note);
                 }}
               >
-                ✏️
+                <EditIcon size={16} color="#ffffff" />
               </button>
               <button
                 className="icon-btn archive-btn"
@@ -103,7 +104,7 @@ function NoteItem({
                   onArchive(note);
                 }}
               >
-                📥
+                <ArchiveIcon size={16} color="#ffffff" />
               </button>
               <button
                 className="icon-btn delete-btn"
@@ -113,7 +114,7 @@ function NoteItem({
                   onDelete(note);
                 }}
               >
-                🗑️
+                <TrashIcon size={16} color="#ffffff" />
               </button>
             </>
           )}

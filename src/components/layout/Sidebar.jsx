@@ -1,13 +1,14 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { ROUTES } from "../../utils/constants";
+import { NotesIcon, ArchiveIcon, TrashIcon } from "../common/Icons";
 
 function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
 
   const menuItems = [
-    { to: ROUTES.HOME, label: "Notes", icon: "📝", isNoteRoot: true },
-    { to: ROUTES.ARCHIVE, label: "Archive", icon: "📥" },
-    { to: ROUTES.TRASH, label: "Trash", icon: "🗑️" },
+    { to: ROUTES.HOME, label: "Notes", icon: <NotesIcon size={20} color="#ffffff" />, isNoteRoot: true },
+    { to: ROUTES.ARCHIVE, label: "Archive", icon: <ArchiveIcon size={20} color="#ffffff" /> },
+    { to: ROUTES.TRASH, label: "Trash", icon: <TrashIcon size={20} color="#ffffff" /> },
   ];
 
   function isItemActive(item) {
