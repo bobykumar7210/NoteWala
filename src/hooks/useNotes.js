@@ -9,12 +9,8 @@ import {
   selectActiveTab,
   selectNoteToDelete,
   selectIsDeleting,
-} from "../redux/selectors/noteSelectors";
-import {
   selectAuthToken,
   selectCurrentUser,
-} from "../redux/selectors/authSelectors";
-import {
   fetchNotesThunk,
   fetchSingleNoteThunk,
   updateNoteThunk,
@@ -27,12 +23,12 @@ import {
   setActiveTab as setReduxActiveTab,
   setNoteToDelete as setReduxNoteToDelete,
   clearNoteToDelete,
-} from "../redux/actions/noteActions";
-import { logoutUserThunk } from "../redux/actions/authActions";
+  logoutUserThunk,
+} from "../redux";
 import { ROUTES, NOTE_STATUS, APP_TITLES } from "../utils/constants";
 
 /**
- * Custom hook encapsulating all notes state via Traditional Redux,
+ * Custom hook encapsulating all notes state via Redux Toolkit,
  * fetching, mutations, and URL route synchronization
  */
 export function useNotes() {

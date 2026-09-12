@@ -1,8 +1,14 @@
-import { legacy_createStore as createStore, applyMiddleware } from "redux";
-import { thunk } from "redux-thunk";
-import { rootReducer } from "./reducers/rootReducer";
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "./slices/authSlice";
+import noteReducer from "./slices/noteSlice";
 
 /**
- * Traditional Redux Store creation with Thunk middleware
+ * Modern Redux Store configuration via Redux Toolkit
  */
-export const store = createStore(rootReducer, applyMiddleware(thunk));
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    notes: noteReducer,
+  },
+  devTools: import.meta.env.DEV,
+});

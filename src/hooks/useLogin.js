@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUserThunk, clearAuthError } from "../redux/actions/authActions";
-import { selectAuthLoading, selectAuthError } from "../redux/selectors/authSelectors";
+import {
+  loginUserThunk,
+  clearAuthError,
+  selectAuthLoading,
+  selectAuthError,
+} from "../redux";
 import { validateLogin } from "../validators";
 import { ROUTES, APP_TITLES } from "../utils/constants";
 
 /**
- * Custom hook encapsulating login form state, validation, and submission logic via Redux
+ * Custom hook encapsulating login form state, validation, and submission logic via Redux Toolkit
  */
 export function useLogin() {
   const navigate = useNavigate();
@@ -48,13 +52,18 @@ export function useLogin() {
     setErrors({});
 
     try {
-      await dispatch(
+      const result = await dispatch(
         loginUserThunk({
           username: formData.username.trim(),
           password: formData.password,
         })
       );
-      navigate(ROUTES.HOME);
+
+      if (loginUserThunk.fulfilled.match(result)) {
+        navigate(ROUTES.HOME);
+      } else {
+        throw new Error(result.payload || "Login failed");
+      }
     } catch (error) {
       setErrors((prev) => ({
         ...prev,

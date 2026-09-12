@@ -1,6 +1,6 @@
-import { combineReducers } from "redux";
-import { authReducer } from "./authReducer";
-import { noteReducer } from "./noteReducer";
+import { combineReducers } from "@reduxjs/toolkit";
+import authReducer from "../slices/authSlice";
+import noteReducer from "../slices/noteSlice";
 
 export const rootReducer = combineReducers({
   auth: authReducer,

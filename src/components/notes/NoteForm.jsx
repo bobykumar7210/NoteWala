@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { createNoteThunk } from "../../redux/actions/noteActions";
+import { createNoteThunk } from "../../redux";
 import { validateNote } from "../../validators";
 
 function NoteForm({ refreshNotes }) {
@@ -82,7 +82,7 @@ function NoteForm({ refreshNotes }) {
               <button
                 id="create-note-btn"
                 type="submit"
-                className="btn-teal"
+                className="btn-blue"
                 disabled={isCreating || !title.trim()}
               >
                 {isCreating ? "Saving…" : "Add note"}

@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { registerUserThunk, clearAuthError } from "../redux/actions/authActions";
-import { selectAuthLoading, selectAuthError } from "../redux/selectors/authSelectors";
+import {
+  registerUserThunk,
+  clearAuthError,
+  selectAuthLoading,
+  selectAuthError,
+} from "../redux";
 import { validateRegister } from "../validators";
 import { ROUTES, APP_TITLES } from "../utils/constants";
 
 /**
- * Custom hook encapsulating registration form state, validation, and submission logic via Redux
+ * Custom hook encapsulating registration form state, validation, and submission logic via Redux Toolkit
  */
 export function useRegister() {
   const navigate = useNavigate();
@@ -61,7 +65,7 @@ export function useRegister() {
     setSuccessMessage("");
 
     try {
-      await dispatch(
+      const result = await dispatch(
         registerUserThunk({
           username: formData.name.trim(),
           email: formData.email.trim(),
@@ -69,8 +73,12 @@ export function useRegister() {
         })
       );
 
-      setSuccessMessage("Account created! Redirecting to login…");
-      setTimeout(() => navigate(ROUTES.LOGIN), 1500);
+      if (registerUserThunk.fulfilled.match(result)) {
+        setSuccessMessage("Account created! Redirecting to login…");
+        setTimeout(() => navigate(ROUTES.LOGIN), 1500);
+      } else {
+        throw new Error(result.payload || "Registration failed");
+      }
     } catch (error) {
       setErrors((prev) => ({
         ...prev,

@@ -6,8 +6,9 @@ import {
   selectIsAuthenticated,
   selectAuthLoading,
   selectAuthError,
-} from "../redux/selectors/authSelectors";
-import { loginSuccess, logoutUserThunk } from "../redux/actions/authActions";
+  loginSuccess,
+  logoutUserThunk,
+} from "../redux";
 import { STORAGE_KEYS } from "../utils/constants";
 
 const AuthContext = createContext(null);
@@ -23,7 +24,7 @@ export function AuthProvider({ children }) {
   function login(newToken, userData) {
     localStorage.setItem(STORAGE_KEYS.TOKEN, newToken);
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
-    dispatch(loginSuccess(newToken, userData));
+    dispatch(loginSuccess({ token: newToken, user: userData }));
   }
 
   function logout() {
